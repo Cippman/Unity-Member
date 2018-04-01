@@ -1,201 +1,233 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Ludiq.Reflection
+#pragma warning disable 0659
+namespace CippSharp.Members
 {
-	[Serializable]
-	public class AnimatorParameter
-	{
-		[SerializeField]
-		private Animator _target;
-		/// <summary>
-		/// The animator containing the member.
-		/// </summary>
-		public Animator target
-		{
-			get { return _target; }
-			set { _target = value; isLinked = false; }
-		}
+    [Serializable]
+    public class AnimatorParameter
+    {
+        [SerializeField]
+        private Animator _target;
 
-		[SerializeField]
-		private string _name;
-		/// <summary>
-		/// The name of the parameter.
-		/// </summary>
-		public string name
-		{
-			get { return _name; }
-			set { _name = value; isLinked = false; }
-		}
+        /// <summary>
+        /// The animator containing the member.
+        /// </summary>
+        public Animator target
+        {
+            get { return _target; }
+            set
+            {
+                _target = value;
+                isLinked = false;
+            }
+        }
 
-		/// <summary>
-		/// The underlying animator controller parameter.
-		/// </summary>
-		public AnimatorControllerParameter parameterInfo { get; private set; }
+        [SerializeField]
+        private string _name;
 
-		/// <summary>
-		/// Indicates whether the parameter has been found and analyzed.
-		/// </summary>
-		public bool isLinked { get; private set; }
+        /// <summary>
+        /// The name of the parameter.
+        /// </summary>
+        public string name
+        {
+            get { return _name; }
+            set
+            {
+                _name = value;
+                isLinked = false;
+            }
+        }
 
-		/// <summary>
-		/// Indicates whether the animator parameter has been properly assigned.
-		/// </summary>
-		public bool isAssigned
-		{
-			get
-			{
-				return target != null && !string.IsNullOrEmpty(name);
-			}
-		}
+        /// <summary>
+        /// The underlying animator controller parameter.
+        /// </summary>
+        public AnimatorControllerParameter parameterInfo { get; private set; }
 
-		public AnimatorParameter() { }
+        /// <summary>
+        /// Indicates whether the parameter has been found and analyzed.
+        /// </summary>
+        public bool isLinked { get; private set; }
 
-		public AnimatorParameter(string name)
-		{
-			this.name = name;
-		}
+        /// <summary>
+        /// Indicates whether the animator parameter has been properly assigned.
+        /// </summary>
+        public bool isAssigned
+        {
+            get
+            {
+                return target != null && !string.IsNullOrEmpty(name);
+            }
+        }
 
-		public AnimatorParameter(string name, Animator target)
-		{
-			this.name = name;
-			this.target = target;
+        public AnimatorParameter()
+        {
+        }
 
-			Link();
-		}
+        public AnimatorParameter(string name)
+        {
+            this.name = name;
+        }
 
-		/// <summary>
-		/// Fetches and caches the parameter.
-		/// </summary>
-		public void Link()
-		{
-			if (target == null)
-			{
-				throw new UnityException("Target has not been defined.");
-			}
+        public AnimatorParameter(string name, Animator target)
+        {
+            this.name = name;
+            this.target = target;
 
-			foreach (AnimatorControllerParameter parameter in target.parameters)
-			{
-				if (parameter.name == name)
-				{
-					parameterInfo = parameter;
-					return;
-				}
-			}
+            Link();
+        }
 
-			throw new UnityException(string.Format("Animator parameter not found: '{0}'.", name));
-		}
+        /// <summary>
+        /// Fetches and caches the parameter.
+        /// </summary>
+        public void Link()
+        {
+            if (target == null)
+            {
+                throw new UnityException("Target has not been defined.");
+            }
 
-		/// <summary>
-		/// Fetches and caches the parameter if it is not already present.
-		/// </summary>
-		protected void EnsureLinked()
-		{
-			if (!isLinked)
-			{
-				Link();
-			}
-		}
+            foreach (AnimatorControllerParameter parameter in target.parameters)
+            {
+                if (parameter.name == name)
+                {
+                    parameterInfo = parameter;
+                    return;
+                }
+            }
 
-		/// <summary>
-		/// Retrieves the value of the parameter.
-		/// </summary>
-		public object Get()
-		{
-			EnsureLinked();
+            throw new UnityException(string.Format("Animator parameter not found: '{0}'.", name));
+        }
 
-			switch (parameterInfo.type)
-			{
-				case AnimatorControllerParameterType.Float: return target.GetFloat(parameterInfo.nameHash);
-				case AnimatorControllerParameterType.Int: return target.GetInteger(parameterInfo.nameHash);
-				case AnimatorControllerParameterType.Bool: return target.GetBool(parameterInfo.nameHash);
-				case AnimatorControllerParameterType.Trigger: throw new UnityException("Cannot get the value of a trigger parameter.");
-				default: throw new NotImplementedException();
-			}
-		}
+        /// <summary>
+        /// Fetches and caches the parameter if it is not already present.
+        /// </summary>
+        protected void EnsureLinked()
+        {
+            if (!isLinked)
+            {
+                Link();
+            }
+        }
 
-		/// <summary>
-		/// Retrieves the value of the parameter casted to the specified type.
-		/// </summary>
-		public T Get<T>() where T : struct
-		{
-			return (T)Get();
-		}
+        /// <summary>
+        /// Retrieves the value of the parameter.
+        /// </summary>
+        public object Get()
+        {
+            EnsureLinked();
 
-		/// <summary>
-		/// Assigns a new value to the parameter.
-		/// </summary>
-		public void Set(object value)
-		{
-			EnsureLinked();
+            switch (parameterInfo.type)
+            {
+                case AnimatorControllerParameterType.Float:
+                    return target.GetFloat(parameterInfo.nameHash);
+                case AnimatorControllerParameterType.Int:
+                    return target.GetInteger(parameterInfo.nameHash);
+                case AnimatorControllerParameterType.Bool:
+                    return target.GetBool(parameterInfo.nameHash);
+                case AnimatorControllerParameterType.Trigger:
+                    throw new UnityException("Cannot get the value of a trigger parameter.");
+                default:
+                    throw new NotImplementedException();
+            }
+        }
 
-			switch (parameterInfo.type)
-			{
-				case AnimatorControllerParameterType.Float: target.SetFloat(parameterInfo.nameHash, (float)value); break;
-				case AnimatorControllerParameterType.Int: target.SetInteger(parameterInfo.nameHash, (int)value); break;
-				case AnimatorControllerParameterType.Bool: target.SetBool(parameterInfo.nameHash, (bool)value); break;
-				case AnimatorControllerParameterType.Trigger: throw new UnityException("Cannot set the value of a trigger parameter.");
-				default: throw new NotImplementedException();
-			}
-		}
+        /// <summary>
+        /// Retrieves the value of the parameter casted to the specified type.
+        /// </summary>
+        public T Get<T>() where T : struct
+        {
+            return (T)Get();
+        }
 
-		/// <summary>
-		/// Triggers the parameter.
-		/// </summary>
-		public void SetTrigger()
-		{
-			EnsureLinked();
+        /// <summary>
+        /// Assigns a new value to the parameter.
+        /// </summary>
+        public void Set(object value)
+        {
+            EnsureLinked();
 
-			if (parameterInfo.type != AnimatorControllerParameterType.Trigger)
-			{
-				throw new UnityException("Parameter is not a trigger.");
-			}
+            switch (parameterInfo.type)
+            {
+                case AnimatorControllerParameterType.Float:
+                    target.SetFloat(parameterInfo.nameHash, (float)value);
+                    break;
+                case AnimatorControllerParameterType.Int:
+                    target.SetInteger(parameterInfo.nameHash, (int)value);
+                    break;
+                case AnimatorControllerParameterType.Bool:
+                    target.SetBool(parameterInfo.nameHash, (bool)value);
+                    break;
+                case AnimatorControllerParameterType.Trigger:
+                    throw new UnityException("Cannot set the value of a trigger parameter.");
+                default:
+                    throw new NotImplementedException();
+            }
+        }
 
-			target.SetTrigger(parameterInfo.nameHash);
-		}
+        /// <summary>
+        /// Triggers the parameter.
+        /// </summary>
+        public void SetTrigger()
+        {
+            EnsureLinked();
 
-		/// <summary>
-		/// Resets the trigger on the parameter.
-		/// </summary>
-		public void ResetTrigger()
-		{
-			EnsureLinked();
+            if (parameterInfo.type != AnimatorControllerParameterType.Trigger)
+            {
+                throw new UnityException("Parameter is not a trigger.");
+            }
 
-			if (parameterInfo.type != AnimatorControllerParameterType.Trigger)
-			{
-				throw new UnityException("Parameter is not a trigger.");
-			}
+            target.SetTrigger(parameterInfo.nameHash);
+        }
 
-			target.ResetTrigger(parameterInfo.nameHash);
-		}
+        /// <summary>
+        /// Resets the trigger on the parameter.
+        /// </summary>
+        public void ResetTrigger()
+        {
+            EnsureLinked();
 
-		/// <summary>
-		/// The type of the parameter, or null if it is a trigger.
-		/// </summary>
-		public Type type
-		{
-			get
-			{
-				switch (parameterInfo.type)
-				{
-					case AnimatorControllerParameterType.Float: return typeof(float);
-					case AnimatorControllerParameterType.Int: return typeof(int);
-					case AnimatorControllerParameterType.Bool: return typeof(bool);
-					case AnimatorControllerParameterType.Trigger: return null;
-					default: throw new NotImplementedException();
-				}
-			}
-		}
+            if (parameterInfo.type != AnimatorControllerParameterType.Trigger)
+            {
+                throw new UnityException("Parameter is not a trigger.");
+            }
+
+            target.ResetTrigger(parameterInfo.nameHash);
+        }
+
+        /// <summary>
+        /// The type of the parameter, or null if it is a trigger.
+        /// </summary>
+        public Type type
+        {
+            get
+            {
+                switch (parameterInfo.type)
+                {
+                    case AnimatorControllerParameterType.Float:
+                        return typeof(float);
+                    case AnimatorControllerParameterType.Int:
+                        return typeof(int);
+                    case AnimatorControllerParameterType.Bool:
+                        return typeof(bool);
+                    case AnimatorControllerParameterType.Trigger:
+                        return null;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+        }
 		
-		// Overriden for comparison in the dropdowns
-		public override bool Equals(object obj)
-		{
-			var other = obj as AnimatorParameter;
+        // Overriden for comparison in the dropdowns
+        public override bool Equals(object obj)
+        {
+            var other = obj as AnimatorParameter;
 
-			return
+            return
 				other != null &&
-				this.target == other.target &&
-				this.name == other.name;
-		}
-	}
+            this.target == other.target &&
+            this.name == other.name;
+        }
+    }
 }
+#pragma warning restore 0659

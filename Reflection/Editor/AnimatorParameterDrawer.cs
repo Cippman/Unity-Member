@@ -1,160 +1,164 @@
 using System.Collections.Generic;
 using System.Linq;
-using Ludiq.Controls.Editor;
-using Ludiq.Reflection.Internal;
-using UnityEditor;
+using CippSharpEditor.Controls;
 using UnityEditor.Animations;
+using CippSharp.Members;
+using CippSharp.Reflection.Internal;
 using UnityEngine;
+using UnityEditor;
 
-namespace Ludiq.Reflection.Editor
+namespace CippSharpEditor.Reflection
 {
-	[CustomPropertyDrawer(typeof(AnimatorParameter))]
-	public class AnimatorParameterDrawer : TargetedDrawer
-	{
-		#region Fields
+    [CustomPropertyDrawer(typeof(AnimatorParameter))]
+    public class AnimatorParameterDrawer : TargetedDrawer
+    {
+        #region Fields
 
-		/// <summary>
-		/// The inspected property, of type AnimatorParameter.
-		/// </summary>
-		protected SerializedProperty property;
+        /// <summary>
+        /// The inspected property, of type AnimatorParameter.
+        /// </summary>
+        protected SerializedProperty property;
 
-		/// <summary>
-		/// The UnityMember.name of the inspected property, of type string.
-		/// </summary>
-		protected SerializedProperty nameProperty;
+        /// <summary>
+        /// The UnityMember.name of the inspected property, of type string.
+        /// </summary>
+        protected SerializedProperty nameProperty;
 
-		/// <summary>
-		/// The targeted animators.
-		/// </summary>
-		protected Animator[] targets;
+        /// <summary>
+        /// The targeted animators.
+        /// </summary>
+        protected Animator[] targets;
 
-		#endregion
+        #endregion
 
-		/// <inheritdoc />
-		protected override void Update(SerializedProperty property)
-		{
-			// Update the targeted drawer
-			base.Update(property);
+        /// <inheritdoc />
+        protected override void Update(SerializedProperty property)
+        {
+            // Update the targeted drawer
+            base.Update(property);
 
-			// Assign the property and sub-properties
-			this.property = property;
-			nameProperty = property.FindPropertyRelative("_name");
+            // Assign the property and sub-properties
+            this.property = property;
+            nameProperty = property.FindPropertyRelative("_name");
 
-			// Find the targets
-			targets = FindTargets();
-		}
+            // Find the targets
+            targets = FindTargets();
+        }
 
-		/// <inheritdoc />
-		protected override void RenderMemberControl(Rect position)
-		{
-			bool enabled = targets.Any(target => target != null);
+        /// <inheritdoc />
+        protected override void RenderMemberControl(Rect position)
+        {
+            bool enabled = targets.Any(target => target != null);
 
-			if (!enabled) EditorGUI.BeginDisabledGroup(true);
+            if (!enabled)
+                EditorGUI.BeginDisabledGroup(true);
 
-			EditorGUI.BeginChangeCheck();
+            EditorGUI.BeginChangeCheck();
 
-			EditorGUI.showMixedValue = nameProperty.hasMultipleDifferentValues;
+            EditorGUI.showMixedValue = nameProperty.hasMultipleDifferentValues;
 
-			var value = GetValue();
-			
-			var selectedOption = value != null ? new DropdownOption<AnimatorParameter>(value, value.name) : null;
+            var value = GetValue();
 
-			value = DropdownGUI<AnimatorParameter>.PopupSingle
+            var selectedOption = value != null ? new DropdownOption<AnimatorParameter>(value, value.name) : null;
+
+            value = DropdownGUI<AnimatorParameter>.PopupSingle
 			(
-				position,
-				GetNameOptions,
-				selectedOption,
-				new DropdownOption<AnimatorParameter>(null, "No Parameter")
-			);
+                position,
+                GetNameOptions,
+                selectedOption,
+                new DropdownOption<AnimatorParameter>(null, "No Parameter")
+            );
 
-			EditorGUI.showMixedValue = false;
+            EditorGUI.showMixedValue = false;
 
-			if (EditorGUI.EndChangeCheck())
-			{
-				SetValue(value);
-			}
+            if (EditorGUI.EndChangeCheck())
+            {
+                SetValue(value);
+            }
 
-			if (!enabled) EditorGUI.EndDisabledGroup();
-		}
+            if (!enabled)
+                EditorGUI.EndDisabledGroup();
+        }
 
-		#region Value
+        #region Value
 
-		/// <summary>
-		/// Returns an animator parameter constructed from the current property values.
-		/// </summary>
-		protected AnimatorParameter GetValue()
-		{
-			if (nameProperty.hasMultipleDifferentValues || string.IsNullOrEmpty(nameProperty.stringValue))
-			{
-				return null;
-			}
+        /// <summary>
+        /// Returns an animator parameter constructed from the current property values.
+        /// </summary>
+        protected AnimatorParameter GetValue()
+        {
+            if (nameProperty.hasMultipleDifferentValues || string.IsNullOrEmpty(nameProperty.stringValue))
+            {
+                return null;
+            }
 
-			string name = nameProperty.stringValue;
-			if (name == string.Empty) name = null;
-			return new AnimatorParameter(name);
-		}
+            string name = nameProperty.stringValue;
+            if (name == string.Empty)
+                name = null;
+            return new AnimatorParameter(name);
+        }
 
-		/// <summary>
-		/// Assigns the property values from a specified animator parameter.
-		/// </summary>
-		protected void SetValue(AnimatorParameter value)
-		{
-			if (value != null)
-			{
-				nameProperty.stringValue = value.name;
-			}
-			else
-			{
-				nameProperty.stringValue = null;
-			}
-		}
+        /// <summary>
+        /// Assigns the property values from a specified animator parameter.
+        /// </summary>
+        protected void SetValue(AnimatorParameter value)
+        {
+            if (value != null)
+            {
+                nameProperty.stringValue = value.name;
+            }
+            else
+            {
+                nameProperty.stringValue = null;
+            }
+        }
 
-		#endregion
+        #endregion
 
-		#region Targetting
+        #region Targetting
 
-		/// <inheritdoc />
-		protected override Object GetSelfTarget(Object obj)
-		{
-			if (obj is GameObject)
-			{
-				return ((GameObject)obj).GetComponent<Animator>();
-			}
-			else if (obj is Component)
-			{
-				return ((Component)obj).GetComponent<Animator>();
-			}
-			else
-			{
-				return null;
-			}
-		}
+        /// <inheritdoc />
+        protected override Object GetSelfTarget(Object obj)
+        {
+            if (obj is GameObject)
+            {
+                return ((GameObject)obj).GetComponent<Animator>();
+            }
+            else if (obj is Component)
+            {
+                return ((Component)obj).GetComponent<Animator>();
+            }
+            else
+            {
+                return null;
+            }
+        }
 
-		/// <summary>
-		/// Gets the list of targets on the inspected objects.
-		/// </summary>
-		protected Animator[] FindTargets()
-		{
-			IEnumerable<Object> objects = targetProperty.Multiple().Select(p => p.objectReferenceValue);
+        /// <summary>
+        /// Gets the list of targets on the inspected objects.
+        /// </summary>
+        protected Animator[] FindTargets()
+        {
+            IEnumerable<Object> objects = targetProperty.Multiple().Select(p => p.objectReferenceValue);
 
-			var childrenAnimators = objects.OfType<GameObject>().SelectMany(gameObject => gameObject.GetComponents<Animator>());
-			var siblingAnimators = objects.OfType<Component>().SelectMany(component => component.GetComponents<Animator>());
+            var childrenAnimators = objects.OfType<GameObject>().SelectMany(gameObject => gameObject.GetComponents<Animator>());
+            var siblingAnimators = objects.OfType<Component>().SelectMany(component => component.GetComponents<Animator>());
 
-			return childrenAnimators.Concat(siblingAnimators).ToArray();
-		}
+            return childrenAnimators.Concat(siblingAnimators).ToArray();
+        }
 
-		#endregion
+        #endregion
 
-		#region Reflection
+        #region Reflection
 
-		/// <summary>
-		/// Gets the list of shared parameter names as popup options.
-		/// </summary>
-		protected List<DropdownOption<AnimatorParameter>> GetNameOptions()
-		{
-			var options = new List<DropdownOption<AnimatorParameter>>();
+        /// <summary>
+        /// Gets the list of shared parameter names as popup options.
+        /// </summary>
+        protected List<DropdownOption<AnimatorParameter>> GetNameOptions()
+        {
+            var options = new List<DropdownOption<AnimatorParameter>>();
 
-			List<string> names = targets
+            List<string> names = targets
 				.Select(animator => ((AnimatorController)animator.runtimeAnimatorController))
 				.Where(animatorController => animatorController != null)
 				.Select(animatorController => animatorController.parameters)
@@ -163,14 +167,14 @@ namespace Ludiq.Reflection.Editor
 				.Distinct()
 				.ToList();
 
-			foreach (string name in names)
-			{
-				options.Add(new DropdownOption<AnimatorParameter>(new AnimatorParameter(name), name));
-			}
+            foreach (string name in names)
+            {
+                options.Add(new DropdownOption<AnimatorParameter>(new AnimatorParameter(name), name));
+            }
 
-			return options;
-		}
+            return options;
+        }
 
-		#endregion
-	}
+        #endregion
+    }
 }
