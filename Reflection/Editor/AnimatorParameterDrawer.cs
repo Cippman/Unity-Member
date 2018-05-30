@@ -1,11 +1,11 @@
-using System.Collections.Generic;
 using System.Linq;
-using CippSharpEditor.Controls;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEditor;
 using UnityEditor.Animations;
 using CippSharp.Members;
 using CippSharp.Reflection.Internal;
-using UnityEngine;
-using UnityEditor;
+using CippSharpEditor.Controls;
 
 namespace CippSharpEditor.Reflection
 {
