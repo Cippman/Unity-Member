@@ -65,7 +65,7 @@ namespace CippSharp.Members
         {
             if (_parameterTypes != null)
             {
-                parameterTypes = _parameterTypes.Select(typeName => TypeSerializer.Deserialize(typeName)).ToArray();
+                parameterTypes = _parameterTypes.Select(TypeSerializer.Deserialize).ToArray();
             }
         }
 
@@ -73,7 +73,7 @@ namespace CippSharp.Members
         {
             if (parameterTypes != null)
             {
-                _parameterTypes = parameterTypes.Select(type => TypeSerializer.Serialize(type)).ToArray();
+                _parameterTypes = parameterTypes.Select(TypeSerializer.Serialize).ToArray();
             }
         }
 
@@ -373,8 +373,7 @@ namespace CippSharp.Members
                 {
                     methodInfo = type.GetExtensionMethods()
 						.Where(extension => extension.Name == name)
-						.Where(extension => Enumerable.SequenceEqual(extension.GetParameters().Select(paramInfo => paramInfo.ParameterType), parameterTypes))
-						.FirstOrDefault();
+						.FirstOrDefault(extension => extension.GetParameters().Select(paramInfo => paramInfo.ParameterType).SequenceEqual(parameterTypes));
                 }
 
                 if (methodInfo == null)
@@ -462,13 +461,6 @@ namespace CippSharp.Members
             }
         }
 
-        //		/// <summary>
-        //		/// Retrieves the value of the member casted to the specified type.
-        //		/// </summary>
-        //		public T Get<T> ()
-        //		{
-        //			return (T)Get ();
-        //		}
 
         /// <summary>
         /// Assigns a new value to the field or property.
@@ -521,13 +513,6 @@ namespace CippSharp.Members
             }
         }
 
-        //		/// <summary>
-        //		/// Invokes the method with any number of arguments of any type and returns its return value casted to the specified type, or null if there isn't any (void).
-        //		/// </summary>
-        //		public T Invoke<T> (params object[] arguments)
-        //		{
-        //			return (T)Invoke (arguments);
-        //		}
 
         /// <summary>
         /// If the member is a method, invokes it with any number of arguments of any type and returns its return value, or null if there isn't any (void).
@@ -566,15 +551,6 @@ namespace CippSharp.Members
             }
         }
 
-        //		/// <summary>
-        //		/// If the member is a method, invokes it with any number of arguments of any type and returns its return value, or null if there isn't any (void).
-        //		/// If the member is a field or property, sets its value to the first argument and returns null.
-        //		/// </summary>
-        //		public T InvokeOrSet<T> (params object[] arguments)
-        //		{
-        //			return (T)InvokeOrSet (arguments);
-        //		}
-
         /// <summary>
         /// If the member is a field or property, retrieves its value.
         /// If the member is a method, invokes it with any number of arguments of any type and returns its return value, or null if there isn't any (void).
@@ -607,15 +583,6 @@ namespace CippSharp.Members
                     throw new UnityReflectionException();
             }
         }
-
-        //		/// <summary>
-        //		/// If the member is a field or property, retrieves its value.
-        //		/// If the member is a method, invokes it with any number of arguments of any type and returns its return value, or null if there isn't any (void).
-        //		/// </summary>
-        //		public T GetOrInvoke<T> (params object[] arguments)
-        //		{
-        //			return (T)GetOrInvoke (arguments);
-        //		}
 
         /// <summary>
         /// The type of the reflected field or property or return type of the reflected method.
